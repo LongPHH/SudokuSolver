@@ -5,6 +5,9 @@
 # degree checking. 
 
 def mrv(array):
+    # This is to check if the solution is complete
+    done = 0
+
     # Return Value
     val = [-1, (0, 0)]
 
@@ -36,6 +39,7 @@ def mrv(array):
     for y in range(len(array)):
         for x in range(len(array[y])):
             if array[y][x] == 0:
+                done += 1
                 # Loop for grid count
                 gridcount = 0
                 grid_x = x - x%3
@@ -50,5 +54,47 @@ def mrv(array):
                 if count >= val[0]:
                     val = [count, (y, x)]
 
+    if done == 0:
+        return (-1, -1)
+
     # Return MRV Value in tuple format, (Y, X)
     return val[1]
+
+
+# Simple node class for tree structure
+class Node:
+    def __init__(self, parent, array):
+        self.parent = parent
+        self.array = array
+
+# This function checks the validity of a move
+# Checks row, column and grid to ensure insertion is unique
+def check_validity(array, num, loc):
+    for x in array[loc[0]]:
+        if x == num:
+            return False
+    for y in range(10):
+        if array[y][loc[1]] == num:
+            return False
+
+    grid_x = loc[1] - x%3
+    grid_y = loc[0] - y%3
+    for j in range(0, 3):
+        for i in range(0, 3):
+            if array[grid_y + j][grid_x + i] == num:
+                return False
+
+    return True
+
+# Main driver function. Modifies most relevant variables first, then builds a queue for a tree. This is closer to dfs than bfs. 
+queue = []
+def solve(node):
+    (Y, X) = mrv(node.array)
+    if Y == -1 and X == -1:
+        return node
+    for i in range (0, 10):
+        if check_validity(node.array, i, (Y, X)):
+            new_arr = node.array
+            new_arr[Y][X] = i
+            queue.append(Node(node, new_arr))
+    solve(queue[-1])
