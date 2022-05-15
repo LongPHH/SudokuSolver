@@ -1,3 +1,5 @@
+# This sodoku solver relies on the assumptions that any inputs are valid problems (i.e. no dissallowed conditions within input)
+
 
 # The Minimum remaining values function allows us to identify the best variable to next modify
 # The way it is implimented here checks for counts of values in the rows, cols and grids of all empty vars
