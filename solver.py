@@ -26,7 +26,6 @@ def getInput():     # get input from txt file and put into a 2d array
     file.close()
 
     for line in lines:
-
         if count < 10:
             line = line.strip().split(" ")
             line = [int(num) for num in line]
@@ -59,7 +58,7 @@ def writeOutput(solvedGridNode):
 # if two values have same number of domain, use degree heuristic, if that also same, choose first one. 
 # if cannot choose var, means done.
 
-def parse_hash(arr):                # get all available domain 
+def parse_hash(arr):                # this functon get all available domain count
     for i in range(9):
         rows[i] = [None] * 9
     for i in range(9):
@@ -86,13 +85,18 @@ def parse_hash(arr):                # get all available domain
                         boxes[(adder_y, adder_x)][arr[3*adder_x + x][3*adder_y + y] - 1] = 1
 
 
-def mrv(array):
+def chooseVar(array):
+    '''
+    this will calculate both MRV and degree hueristics simultaneously, 
+    only use DH if there are multiple variable with same MRV
+    available_val is a list to see if 1-9 is available or not. 
+    '''
     available_vals = [None] * 9
-    mrv = [20, [(-1, -1), -1]]
+    mrv = [float("inf"), [(-1, -1), float('-inf')]]              # float("inf") is # of remaining value . (-1,-1) is coord of MRV, float("-inf") is degree hueristic
     for y in range(9):
         for x in range(9):
             if array[y][x] == 0:
-                deg_huer = 0
+                deg_huer = 0                
                 for i in range(len(cols[x])):
                     if cols[x][i] != None:
                         available_vals[i] = 1
@@ -111,15 +115,17 @@ def mrv(array):
                 
                 remaining_vals = 0
                 for i in available_vals:
-                    if i==None:
+                    if i==None:             # if not available
                         remaining_vals += 1
                 
+                # update MRV and coord if found smaller, add new coord into mrv if found one equal
                 if remaining_vals < mrv[0]:
                     mrv = [remaining_vals, [(y, x), deg_huer]]
                 elif remaining_vals == mrv[0]:
                     mrv.append([(y, x), deg_huer])
                 else: pass
 
+    # compare using degree hueristics if mrv same
     if len(mrv) > 2:
         mrv.pop(0)
         deg = 0
@@ -127,78 +133,11 @@ def mrv(array):
         for value in mrv:
             if value[1] > deg:
                 coord = value[0]
-    else:
+    # choose first one deg huer same
+    else:           
         coord = mrv[1][0]
     return coord
-
-
-
-def choose_var(array):      # array is the big grid
-    # This is to check if the solution is complete
-    done = 0
-
-    # Return Value
-    val = [-1, (0, 0)]
-    avail_domain = []
-
-    # Hash table of row/column counts. keys are row and column, values are count of assigned values in row and column
-    assigned_vals = {}
-    count = 0
-
-    row = 0
-    assigned_vals['row'] = {}
-    for y in array:
-        for x in y:
-            if x != 0:
-                count += 1                      # get the count of all assigned value in a row
-        assigned_vals['row'][row] = count         # {row: {1: 3}, {2: 4}, col: {1: 3}, {2: 5}}
-        count = 0
-        row += 1
-    
-    # Function for values count
-    assigned_vals['col'] = {}
-    for x in range(0, 9):
-        for y in range(0, 9):
-            if array[y][x] != 0:
-                count += 1
-        assigned_vals['col'][x] = count
-        count = 0
-    
-    # loop thru grid, find the (x,y) of ava
-    for y in range(len(array)):
-        for x in range(len(array[y])):
-            if array[y][x] == 0:
-                done += 1
-                # Loop for grid count
-                gridcount = 0
-                grid_x = x - x%3
-                grid_y = y - y%3
-                for j in range(0, 3):
-                    for i in range(0, 3):
-                        if array[grid_y + j][grid_x + i] != 0:
-                            gridcount += 1
-                
-                # Calculation of total count of already assigned value, and update of MRV
-                count = gridcount + assigned_vals['row'][x] + assigned_vals['col'][y]
-                if count > val[0]:         # found mrv
-                    val = [count, (y, x)]
-                elif count == val[0]:      # use degree heuristic, SHOULD SAVE INTO A LIST JUST IN CASE FOUND ONE WITH SAME DEGREE
-                    pass
-                else:                       # choose one arbitrarily
-                    pass
-
-                    
-
-    #print(assigned_vals)
-    if done == 0:
-        return (-1, -1)
-
-    # Return MRV Value in tuple format, (Y, X)
-    return val[1]
-
-def deg_huer(arr, lst):
-    for i in lst:
-        (Y, X) = lst[1]
+                  
         
 
 
@@ -233,7 +172,7 @@ def solve(node, first):
     if first != None:
         queue.append(node)
     parse_hash(node.array)
-    (Y, X) = mrv(node.array)
+    (Y, X) = chooseVar(node.array)
     if Y == -1 and X == -1:
         return node
     queue.remove(node)
