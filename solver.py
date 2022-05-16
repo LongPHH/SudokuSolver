@@ -1,9 +1,7 @@
 # This sodoku solver relies on the assumptions that any inputs are valid problems (i.e. no dissallowed conditions within input)
-
-from nbformat import write
-from numpy import insert
 from copy import deepcopy
 
+# these 3 hash maps are for getting MRV
 
 rows = {}
 for i in range(9):
@@ -34,9 +32,6 @@ def getInput():     # get input from txt file and put into a 2d array
             line = [int(num) for num in line]
             grid.append(line)
             count += 1
-
-    # converting into numpy array
-    #np.asarray(grid)
     return grid
 
 
@@ -194,7 +189,7 @@ def choose_var(array):      # array is the big grid
 
                     
 
-    print(assigned_vals)
+    #print(assigned_vals)
     if done == 0:
         return (-1, -1)
 
@@ -247,7 +242,7 @@ def solve(node, first):
             new_arr = deepcopy(node.array)
             new_arr[Y][X] = i
             queue.append(Node(node, new_arr))
-            print("Insertion: ", i, (Y, X))
+            #print("Insertion: ", i, (Y, X))
 
     
     if queue == []:
@@ -262,11 +257,11 @@ def main():
     var = solve(Node(None,grid), 1)
     count = 0
     while type(var) == tuple:
-        print("Count: ", count)
-        print(var[1].array)
+        #print("Count: ", count)
+        #print(var[1].array)
         var = solve(var[1], None)
         count += 1
-    print(var)
+    #print(var)
     writeOutput(var)
 
 main()
